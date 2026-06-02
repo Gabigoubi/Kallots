@@ -11,7 +11,10 @@ namespace Kallots.Worker.Services
     {
         // The flare gun! This event is triggered when the wake word is heard.
         public event EventHandler? WakeWordDetected;
-        
+
+private readonly string _modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models", "Vosk");
+
+
         // The path to the lightweight Vosk model on your local machine
         private readonly string _modelPath = "Models/vosk-model-small-pt";
 
