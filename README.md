@@ -21,50 +21,51 @@ Arquitetura: Modular com Inversão de Dependência (Interfaces para isolar I/O).
 ---
 
 ## Backlog do MVP (Kallots)
-Step 1: Project Setup & Core Interfaces
 
-Criar o projeto C# (vamos usar um Worker Service, que é ideal para rodar silenciosamente em background no Windows).
+✅ Step 1: Project Setup & Core Interfaces
 
-Definir as interfaces base (ex: ISttProvider, ILlmProvider, ITtsProvider, ICommandExecutor) para garantir a Inversão de Dependência desde o dia zero.
+[x] Criar o projeto C# (vamos usar um Worker Service, que é ideal para rodar silenciosamente em background no Windows).
 
-Step 2: The Ear (Wake Word Detection)
+[x] Definir as interfaces base (ex: ISttProvider, ILlmProvider, ITtsProvider, ICommandExecutor) para garantir a Inversão de Dependência desde o dia zero.
 
-Integrar a biblioteca Vosk.
+✅ Step 2: The Ear (Wake Word Detection)
 
-Configurar a captura contínua do microfone.
+[x] Integrar a biblioteca Vosk.
 
-Criar o loop que escuta o ambiente e dispara um evento (gatilho) apenas quando ouvir a palavra "Kallots".
+[x] Configurar a captura contínua do microfone.
 
-Step 3: The Transcriber (Speech-to-Text)
+[x] Criar o loop que escuta o ambiente e dispara um evento (gatilho) apenas quando ouvir a palavra "Kallots".
 
-Integrar o Whisper.net.
+⏳ Step 3: The Transcriber (Speech-to-Text)
 
-Criar o mecanismo que grava o áudio logo após o gatilho do Vosk.
+[ ] Integrar o Whisper.net.
 
-Converter esse áudio gravado em texto estruturado (string).
+[ ] Criar o mecanismo que grava o áudio logo após o gatilho do Vosk.
 
-Step 4: The Brain (LLM Integration)
+[ ] Converter esse áudio gravado em texto estruturado (string).
 
-Configurar a comunicação HTTP (REST) com a API do Groq (LLaMA 70B).
+⏳ Step 4: The Brain (LLM Integration)
 
-Criar um System Prompt forte para que o Kallots entenda que é um assistente Windows e retorne intenções claras em vez de longos textos.
+[ ] Configurar a comunicação HTTP (REST) com a API do Groq (LLaMA 70B).
 
-Step 5: The Hands (OS Execution)
+[ ] Criar um System Prompt forte para que o Kallots entenda que é um assistente Windows e retorne intenções claras em vez de longos textos.
 
-Implementar a classe que utiliza System.Diagnostics.Process para executar as intenções mapeadas (ex: abrir VS Code, abrir navegador).
+⏳ Step 5: The Hands (OS Execution)
 
-Step 6: The Voice (Edge TTS)
+[ ] Implementar a classe que utiliza System.Diagnostics.Process para executar as intenções mapeadas (ex: abrir VS Code, abrir navegador).
 
-Criar a integração com o Edge TTS.
+⏳ Step 6: The Voice (Edge TTS)
 
-Desenvolver o fluxo de boot do sistema ("Olá Usuário...").
+[ ] Criar a integração com o Edge TTS.
 
-Fazer o sistema "falar" antes e depois de executar um comando.
+[ ] Desenvolver o fluxo de boot do sistema ("Olá Usuário...").
 
-Step 7: The Orchestrator & OS Boot
+[ ] Fazer o sistema "falar" antes e depois de executar um comando.
 
-Amarrar todos os serviços na classe principal (Worker).
+⏳ Step 7: The Orchestrator & OS Boot
 
-Configurar o registro do Windows ou a pasta Startup para que o executável inicie automaticamente e de forma invisível no login.
+[ ] Amarrar todos os serviços na classe principal (Worker).
+
+[ ] Configurar o registro do Windows ou a pasta Startup para que o executável inicie automaticamente e de forma invisível no login.
 
 ---
