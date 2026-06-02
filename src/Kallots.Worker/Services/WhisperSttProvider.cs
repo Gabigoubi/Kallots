@@ -1,3 +1,4 @@
+
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -8,8 +9,8 @@ namespace Kallots.Worker.Services
 {
     public class WhisperSttProvider : ISttProvider
     {
-        // Path to the Whisper model file
-        private readonly string _modelPath = "Models/ggml-base.bin";
+        // DYNAMIC PATH INJECTED HERE
+        private readonly string _modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models", "Whisper", "ggml-base.bin");
         private readonly WhisperFactory _whisperFactory;
 
         public WhisperSttProvider()
