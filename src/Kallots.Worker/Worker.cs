@@ -19,7 +19,6 @@ namespace Kallots.Worker
         private readonly ITtsProvider _ttsProvider;
         private readonly AudioRecorder _audioRecorder;
 
-        // The .NET Dependency Injection automatically provides these implementations
         public Worker(
             ILogger<Worker> logger,
             IWakeWordDetector wakeWordDetector,
@@ -35,7 +34,6 @@ namespace Kallots.Worker
             _commandExecutor = commandExecutor;
             _ttsProvider = ttsProvider;
             
-            // AudioRecorder doesn't have an interface for the MVP as it's a simple internal utility
             _audioRecorder = new AudioRecorder(); 
         }
 
@@ -43,50 +41,58 @@ namespace Kallots.Worker
         {
             _logger.LogInformation("Kallots Background Service starting...");
 
-            // 1. Boot sequence greeting requested in the MVP scope
             await _ttsProvider.SpeakAsync("Olá Usuário, tudo bem? Aguarde enquanto eu estou inicializando meus dados internos... sabe como é né, variáveis e etc... agora sim, o que vamos fazer hoje?");
 
-            // 2. Subscribe to the Wake Word event (The flare gun)
             _wakeWordDetector.WakeWordDetected += async (sender, args) => await ProcessVoiceCommandAsync();
 
-            // 3. Start the continuous listening loop
             await _wakeWordDetector.StartListeningAsync(stoppingToken);
         }
 
-        // The core orchestration logic
         private async Task ProcessVoiceCommandAsync()
         {
             try
             {
                 var tempAudioPath = Path.Combine(Path.GetTempPath(), "kallots_command.wav");
 
-                // UX Feedback so you know it heard the wake word
+                _logger.LogInformation(">>> INICIANDO PIPELINE DE COMANDO <<<");
                 await _ttsProvider.SpeakAsync("Pode falar.");
 
-                // Step 3: Record and Transcribe
-                await _audioRecorder.RecordCommandAsync(tempAudioPath, 5); // Records for 5 seconds
+                _logger.LogInformation("1. Gravando 5 segundos de áudio...");
+                await _audioRecorder.RecordCommandAsync(tempAudioPath, 5); 
+                
+                _logger.LogInformation("2. Áudio gravado. Enviando para o Whisper converter em texto...");
                 var userText = await _sttProvider.TranscribeAudioAsync(tempAudioPath);
 
                 if (string.IsNullOrWhiteSpace(userText))
+                {
+                    _logger.LogWarning("Whisper retornou um texto vazio. Abortando comando.");
                     return;
+                }
+                
+                _logger.LogInformation("   Texto reconhecido pelo Whisper: [{UserText}]", userText);
 
-                // Step 4: Process Intent with Groq
+                _logger.LogInformation("3. Enviando texto para o LLM processar intenção...");
                 var intent = await _llmProvider.ProcessIntentAsync(userText);
+                _logger.LogInformation("   Intenção retornada pelo Groq: [{Intent}]", intent);
 
-                // Step 5 & 6: Execute OS Command and Provide Voice Feedback
+                _logger.LogInformation("4. Executando ação no Sistema Operacional...");
                 if (intent != "UNKNOWN_COMMAND")
                 {
                     await _ttsProvider.SpeakAsync("Ok chefe");
                     _commandExecutor.ExecuteCommand(intent);
+                    _logger.LogInformation("Ação executada com sucesso!");
                 }
                 else
                 {
+                    _logger.LogWarning("Comando desconhecido ou não mapeado pelo LLM.");
                     await _ttsProvider.SpeakAsync("Desculpe, não entendi o comando.");
                 }
+                
+                _logger.LogInformation(">>> PIPELINE FINALIZADO. Voltando a escutar. <<<");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing voice command pipeline.");
+                _logger.LogError(ex, "Erro fatal processando o comando de voz.");
             }
         }
     }

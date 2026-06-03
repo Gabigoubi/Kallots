@@ -1,0 +1,5 @@
+src/Kallots.Worker/Models/
+**/bin/
+**/obj/
+.vs/
+.vscode/
