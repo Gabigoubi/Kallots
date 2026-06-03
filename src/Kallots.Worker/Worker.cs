@@ -1,5 +1,6 @@
+
 using System;
-using System.IO;
+using System.Diagnostics; 
 using System.Threading;
 using System.Threading.Tasks;
 using Kallots.Core.Interfaces;
@@ -18,6 +19,9 @@ namespace Kallots.Worker
         private readonly ICommandExecutor _commandExecutor;
         private readonly ITtsProvider _ttsProvider;
         private readonly AudioRecorder _audioRecorder;
+        
+        // Tranca de Arquitetura: Impede que o sistema tente rodar dois comandos ao mesmo tempo
+        private bool _isProcessingCommand = false; 
 
         public Worker(
             ILogger<Worker> logger,
@@ -41,58 +45,84 @@ namespace Kallots.Worker
         {
             _logger.LogInformation("Kallots Background Service starting...");
 
-            await _ttsProvider.SpeakAsync("Olá Usuário, tudo bem? Aguarde enquanto eu estou inicializando meus dados internos... sabe como é né, variáveis e etc... agora sim, o que vamos fazer hoje?");
-
-            _wakeWordDetector.WakeWordDetected += async (sender, args) => await ProcessVoiceCommandAsync();
+        await _ttsProvider.SpeakAsync("Olá Gabriel, tudo bem? Aguarde enquanto eu estou inicializando meus dados internos... sabe como é, né? variáveis e COISA e tals.. agora sim, quando precisar de mim, diga \"Kallots\".");            // Evento do Vosk: Só iniciamos se o assistente estiver livre
+            _wakeWordDetector.WakeWordDetected += async (sender, args) => 
+            {
+                if (!_isProcessingCommand)
+                {
+                    await ProcessVoiceCommandAsync();
+                }
+            };
 
             await _wakeWordDetector.StartListeningAsync(stoppingToken);
         }
 
         private async Task ProcessVoiceCommandAsync()
         {
+            // Aciona a tranca de segurança
+            _isProcessingCommand = true;
+            var globalTimer = Stopwatch.StartNew();
+
             try
             {
                 var tempAudioPath = Path.Combine(Path.GetTempPath(), "kallots_command.wav");
 
-                _logger.LogInformation(">>> INICIANDO PIPELINE DE COMANDO <<<");
-                await _ttsProvider.SpeakAsync("Pode falar.");
-
-                _logger.LogInformation("1. Gravando 5 segundos de áudio...");
-                await _audioRecorder.RecordCommandAsync(tempAudioPath, 5); 
+                _logger.LogInformation(">>> GATILHO RECEBIDO. INICIANDO PIPELINE <<<");
                 
-                _logger.LogInformation("2. Áudio gravado. Enviando para o Whisper converter em texto...");
+                // Feedback Sonoro UX (Earcon): Bip instantâneo nativo do Windows (800 Hz por 250ms)
+                // Substitui a lentidão do TTS "Pode Falar"
+                if (OperatingSystem.IsWindows())
+                {
+                    Console.Beep(800, 250); 
+                }
+
+                var stepTimer = Stopwatch.StartNew();
+                _logger.LogInformation("1. Gravando 5 segundos de áudio do microfone...");
+                await _audioRecorder.RecordCommandAsync(tempAudioPath, 5); 
+                _logger.LogInformation("   [Telemetria] Tempo de Gravação: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
+                
+                stepTimer.Restart();
+                _logger.LogInformation("2. Transcrevendo áudio pesado com Whisper local...");
                 var userText = await _sttProvider.TranscribeAudioAsync(tempAudioPath);
+                _logger.LogInformation("   [Telemetria] Tempo de Transcrição: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
 
                 if (string.IsNullOrWhiteSpace(userText))
                 {
-                    _logger.LogWarning("Whisper retornou um texto vazio. Abortando comando.");
-                    return;
+                    _logger.LogWarning("Whisper não entendeu nada. Abortando fluxo para evitar consumo nulo.");
+                    return; // Cai direto pro bloco 'finally'
                 }
                 
-                _logger.LogInformation("   Texto reconhecido pelo Whisper: [{UserText}]", userText);
+                _logger.LogInformation("   Texto Mapeado: [{UserText}]", userText);
 
-                _logger.LogInformation("3. Enviando texto para o LLM processar intenção...");
+                stepTimer.Restart();
+                _logger.LogInformation("3. Disparando para Inteligência Nuvem (Groq API)...");
                 var intent = await _llmProvider.ProcessIntentAsync(userText);
-                _logger.LogInformation("   Intenção retornada pelo Groq: [{Intent}]", intent);
+                _logger.LogInformation("   [Telemetria] Tempo de Resposta da API: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
+                _logger.LogInformation("   Intenção Retornada: [{Intent}]", intent);
 
-                _logger.LogInformation("4. Executando ação no Sistema Operacional...");
+                _logger.LogInformation("4. Acionando Motor de Execução Windows...");
                 if (intent != "UNKNOWN_COMMAND")
                 {
                     await _ttsProvider.SpeakAsync("Ok chefe");
                     _commandExecutor.ExecuteCommand(intent);
-                    _logger.LogInformation("Ação executada com sucesso!");
+                    _logger.LogInformation("Ação executada no SO com sucesso!");
                 }
                 else
                 {
-                    _logger.LogWarning("Comando desconhecido ou não mapeado pelo LLM.");
+                    _logger.LogWarning("Nenhuma intenção conhecida mapeada.");
                     await _ttsProvider.SpeakAsync("Desculpe, não entendi o comando.");
                 }
-                
-                _logger.LogInformation(">>> PIPELINE FINALIZADO. Voltando a escutar. <<<");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro fatal processando o comando de voz.");
+                _logger.LogError(ex, "Erro fatal processando o pipeline de voz.");
+            }
+            finally
+            {
+                // Limpa os tempos e destranca o assistente independentemente de ter dado erro ou não
+                globalTimer.Stop();
+                _logger.LogInformation(">>> PIPELINE ENCERRADO. Tempo Total: {Elapsed}ms. Destrancando audição. <<<", globalTimer.ElapsedMilliseconds);
+                _isProcessingCommand = false;
             }
         }
     }
