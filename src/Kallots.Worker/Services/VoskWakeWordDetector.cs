@@ -1,3 +1,4 @@
+
 using System;
 using System.IO;
 using System.Threading;
@@ -13,8 +14,6 @@ namespace Kallots.Worker.Services
     {
         public event EventHandler? WakeWordDetected;
         private readonly string _modelPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Models", "Vosk");
-        
-        // Injetando o sistema de Logs
         private readonly ILogger<VoskWakeWordDetector> _logger;
 
         public VoskWakeWordDetector(ILogger<VoskWakeWordDetector> logger)
@@ -26,8 +25,9 @@ namespace Kallots.Worker.Services
         {
             return Task.Run(() =>
             {
-                _logger.LogInformation("Carregando modelo Vosk na memória...");
+                _logger.LogInformation("[DEBUG] Inicializando motor acústico do Vosk...");
                 Vosk.Vosk.SetLogLevel(-1); 
+                
                 using var model = new Model(_modelPath);
                 using var recognizer = new VoskRecognizer(model, 16000.0f);
 
@@ -48,19 +48,31 @@ namespace Kallots.Worker.Services
                     {
                         var result = recognizer.Result();
                         
-                        // LOG CRÍTICO: Imprime o JSON bruto que o Vosk reconheceu
-                        _logger.LogInformation("Vosk ouviu: {Result}", result);
-                        
-                        if (result.ToLower().Contains("kallots") || result.ToLower().Contains("carlos") || result.ToLower().Contains("calots"))
+                        // Data Normalization for safe analysis
+                        var jsonMinusculo = result.ToLower();
+
+                        // FUZZY MATCHING RADAR: Captures the wake word and its common hallucinations
+                        if (jsonMinusculo.Contains("kallots") || 
+                            jsonMinusculo.Contains("motos")   || 
+                            jsonMinusculo.Contains("calotes") || 
+                            jsonMinusculo.Contains("carlos")  || 
+                            jsonMinusculo.Contains("calots"))
                         {
-                            _logger.LogWarning("GATILHO ACIONADO! Palavra de ativação reconhecida.");
+                            _logger.LogWarning("[GATILHO] Alvo detectado via Fuzzy Match! Identificado no texto bruto: {Result}", result);
+                            
+                            // Dispara o sinalizador para o Orquestrador iniciar a gravação do Whisper
                             WakeWordDetected?.Invoke(this, EventArgs.Empty);
+                        }
+                        else
+                        {
+                            // Log secundário apenas para você acompanhar o ruído descartado no terminal
+                            _logger.LogInformation("[Vosk Descartado] Som ambiente não reconhecido como gatilho: {Result}", result);
                         }
                     }
                 };
 
                 waveIn.StartRecording();
-                _logger.LogInformation("Microfone ABERTO. Vosk escutando ativamente o ambiente...");
+                _logger.LogInformation("[SUCESSO] Ouvido operacional. Aguardando palavra de ativação...");
 
                 cancellationToken.WaitHandle.WaitOne();
                 
