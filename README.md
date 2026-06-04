@@ -7,7 +7,7 @@
 
   <p align="center">
     <img src="https://img.shields.io/badge/Status-Em_Desenvolvimento-00ADD8?style=for-the-badge" alt="Status" />
-    <img src="https://img.shields.io/badge/Vers%C3%A3o-MVP_v1.1-6DB33F?style=for-the-badge" alt="Versão" />
+    <img src="https://img.shields.io/badge/Vers%C3%A3o-MVP_v1.0-6DB33F?style=for-the-badge" alt="Versão" />
     <img src="https://img.shields.io/badge/Licen%C3%A7a-MIT-F7DF1E?style=for-the-badge" alt="Licença" />
   </p>
 </div>
@@ -48,7 +48,7 @@ A grande força do ecossistema do Kallots está na sua **arquitetura modular**. 
 
 ---
 
-## 🚀 O que já está rodando (MVP v1.1)
+## 🚀 O que já está rodando (MVP v1.0)
 
 O escopo atual do MVP está validado, blindado e altamente responsivo nas seguintes frentes:
 
