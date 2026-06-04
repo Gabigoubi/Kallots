@@ -1,12 +1,3 @@
-Com certeza! Se o objetivo é impressionar logo no primeiro olhar e mostrar que esse projeto foi construído por alguém que domina arquitetura e prototipagem de sistemas, o visual precisa refletir a mesma engenharia limpa que está no código.
-
-Como você tem um foco forte em desenhar processos complexos e resolver o B.O. da melhor forma possível, estruturei o README do Kallots para destacar exatamente essa mentalidade: separação de responsabilidades, stack tecnológica bem definida e uma visão clara do que é o MVP hoje e para onde ele vai escalar amanhã.
-
-Copie o código abaixo e cole no seu `README.md`. Ele está formatado com _divs_ centralizadas, _badges_ divididas por categoria e uma estética digna de um repositório de Engenharia de Software.
-
----
-
-````markdown
 <div align="center">
   
   <h1>🤖 Kallots</h1>
@@ -89,6 +80,7 @@ O escopo atual do MVP está validado, blindado e altamente responsivo nas seguin
                                                    ▼
 [ Edge TTS (Resposta Vocal) ] <──(Feedback)── [ Ação Executada no SO ]
 ```
+
 ````
 
 ---
@@ -141,3 +133,4 @@ dotnet run --environment Development
 ```
 
 ---
+````
