@@ -1,126 +1,96 @@
-# Kallots
+<div align="center">
+  <h1>👋 Olá, eu sou Gabriel de Abreu</h1>
+  <h3>Engenheiro de Software | Full Stack | Focado em Arquitetura & Resolução de Problemas</h3>
+  
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&duration=4000&pause=1000&color=ED8B00&center=true&vCenter=true&width=600&lines=Prototipagem+de+Sistemas;Arquitetura+de+Software;Java,+Go,+Python;Resolvendo+B.O.+diariamente" alt="Typing SVG" />
+  
+  <p align="center">
+    <a href="https://www.linkedin.com/in/gabriel-de-abreu-4a6804378/">
+      <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+    </a>
+  </p>
+  <img src="https://komarev.com/ghpvc/?username=Gabigoubi&label=Visitas+no+Perfil&color=ED8B00&style=flat" alt="Contador de Views" />
+</div>
 
 ---
 
-## 📌 Apresentação do Projeto
+## 👨‍💻 Sobre Mim
 
-O **Kallots** é um assistente virtual híbrido de desktop projetado para rodar diretamente em segundo plano no sistema operacional. O projeto nasceu sob a filosofia de desenvolvimento incremental, evoluindo através de escopos pequenos, controlados e focados em arquitetura limpa, escalabilidade e manutenibilidade, evitando complexidade prematura.
+Sou um desenvolvedor com pensamento voltado para otimização, eficiência e arquitetura de software. Com uma base acadêmica sólida em **prototipagem de sistemas**, meu objetivo no dia a dia é mentalizar processos complexos, desenvolver, integrar e resolver o B.O., seja qual for o ecossistema.
 
-A grande força do Kallots está na sua arquitetura modular híbrida: o processamento pesado de áudio (reconhecimento de voz e transcrição) é feito localmente na máquina do usuário para garantir privacidade, enquanto a tomada de decisões e o parse de intenções complexas utilizam modelos de linguagem avançados (LLMs) na nuvem por meio de APIs de altíssima velocidade.
-
----
-
-## 🛠️ Stack Utilizada
-
-- **Plataforma Core:** .NET 8.0 (Worker Service nativo do Windows)
-- **Linguagem:** C# (Abordagem fortemente tipada e orientada a interfaces)
-- **Reconhecimento Acústico (Wake Word):** Vosk (Modelo leve otimizado para português)
-- **Transcrição de Comandos (STT):** Whisper.net (Execução em C++ não gerenciado via bindings .NET)
-- **Cérebro Lógico (LLM):** Groq API (`llama-3.1-8b-instant`) com inferência de ultra-baixa latência
-- **Áudio e Captura:** NAudio para manipulação de streams de microfone em tempo real
-- **Síntese de Voz (TTS):** Edge-TTS (Integração via Python para geração de áudio neural de alta fidelidade)
+Acredito que linguagens e frameworks são apenas ferramentas na maleta de um engenheiro, e o segredo é sempre puxar a ferramenta certa para o trabalho certo. Apesar do meu amor declarado pelo **Java** (preferindo sempre estruturar código e documentação técnica em inglês para manter o mais alto padrão), amo construir microsserviços em **Go** _(APENAS SE NECESSÁRIO KKKK)_, subir APIs em Python e, principalmente, debugar, sendo este último o meu esporte preferido.
 
 ---
 
-## 🚀 Funcionalidades Atuais (MVP v1.0 / v1.1)
+## 🧰 Minha Caixa de Ferramentas
 
-O escopo atual do MVP está validado, blindado e operacional nas seguintes frentes:
+<div align="center">
 
-- [x] **Ouvido em Loop Contínuo:** Monitoramento em segundo plano sem travamento da interface principal do terminal.
-- [x] **Fuzzy Matching Fonético:** O motor do detector de palavras aceita aproximações fonéticas para contornar falhas comuns de ruído em português (ex: intercepta "oi calotes" ou "motos" e converte para o gatilho correto "Kallots").
-- [x] **UX de Latência Zero (Earcon):** Resposta imediata por meio de um feedback sonoro nativo do Windows (Bip por hardware) assim que o nome é reconhecido, dispensando esperas assíncronas de TTS no gatilho.
-- [x] **Tranca de Concorrência (Race Condition Lock):** Mecanismo de estado estruturado que impede o disparo de novos gatilhos ou gravações enquanto um comando anterior já está em processamento no pipeline.
-- [x] **Executor Estático de Tarefas:** Mapeamento duro (_hardcoded_) de intenções capaz de disparar processos reais do Windows:
-- `OPEN_VSCODE` -> Inicializa o Visual Studio Code.
-- `OPEN_BROWSER` -> Abre o navegador padrão do sistema em uma URL pré-definida.
-- `OPEN_CALCULATOR` -> Dispara a calculadora nativa do sistema operacional.
+### 💻 Linguagens Principais
 
-- [x] **Telemetria de Debug Extensa:** Logs detalhados no terminal que cronometram com precisão de milissegundos o tempo exato gasto em cada fase (Gravação, Transcrição Whisper, Resposta do Groq e Execução).
+<img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java"/>
+<img src="https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go"/>
+<img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript"/>
 
----
+### ⚙️ Backend, APIs & Frameworks
 
-## 📐 Arquitetura Atual e Fluxo do MVP
+<img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot"/>
+<img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+<img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
 
-O Kallots é estruturado sob as diretrizes de Injeção de Dependência nativa do .NET, segregando as capacidades físicas do assistente através de interfaces desacopladas (`IWakeWordDetector`, `ISttProvider`, `ILlmProvider`, `ICommandExecutor`, `ITtsProvider`).
+### 🗄️ Dados, Infra & Arquitetura
 
-```
-[Vosk (Ouvido)] ──> [Fuzzy Match] ──> [Windows Beep (Feedback)]
-                                             │
-[Whisper (STT)] <── [Gravação 5s] <─── [Tranca de Segurança]
-       │
-       └──> [Groq API (Cérebro)] ──> [CommandExecutor] ──> [Ação no Windows OS]
+<img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+<img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white" alt="Hibernate"/>
+<img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
 
-```
+### 🧠 Inteligência Artificial & Inferência
 
----
+<img src="https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white" alt="Ollama"/>
+<img src="https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI"/>
+<img src="https://img.shields.io/badge/Llama_3-0466C8?style=for-the-badge&logo=meta&logoColor=white" alt="Llama 3"/>
+<img src="https://img.shields.io/badge/GPT4All-212121?style=for-the-badge&logo=gnometerminal&logoColor=white" alt="GPT4All"/>
+<img src="https://img.shields.io/badge/Groq-F55036?style=for-the-badge&logoColor=white" alt="Groq"/>
 
-## 📈 Futuro do Projeto & Roadmap
+</div>
 
-O Kallots está sendo construído progressivamente. A tabela abaixo diferencia as conquistas atuais do planejamento técnico para as próximas versões.
+<br>
 
-| Versão   | Módulo / Funcionalidade        | Estado       | Descrição                                                                                                                         |
-| -------- | ------------------------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0** | **Arquitetura Base**           | Concluído    | Implementação das interfaces, pipeline de áudio híbrido local/nuvem.                                                              |
-| **v1.1** | **Telemetria & UX**            | Concluído    | Injeção de `ILogger`, medições com `Stopwatch` e feedback via `Console.Beep`.                                                     |
-| **v1.2** | **Varredura Dinâmica de Apps** | ⏳ Planejado | Substituição do bloco `switch` fixo por um leitor nativo do diretório _Start Menu_ do Windows para abrir qualquer app instalado.  |
-| **v2.0** | **Function Calling & Memória** | ⏳ Planejado | Evolução do provedor de LLM para suportar ferramentas (Agentes) e manutenção de histórico de sessão em RAM para conversação real. |
-| **v2.1** | **Integração de WebScraping**  | ⏳ Planejado | Capacidade de consultar APIs de busca ou extrair informações em tempo real da internet sob demanda do usuário.                    |
+> ⚡ **Extras:** Operações Assíncronas, Sistemas Distribuídos, Serviços RESTful e Integração de Áudio (TTS).
 
 ---
 
-## 🎯 Visão de Longo Prazo
+## 🚀 Projetos em Destaque
 
-O objetivo final do Kallots é tornar-se um assistente de desktop autônomo e de tempo integral (_full-time agent_). Em seu estado maduro, o agente não apenas abrirá softwares, mas interagirá de ponta a ponta com o ecossistema do usuário através de fluxos automatizados complexos e seguros.
+### 🎙️ Narrador IA (Minecraft Mod)
 
-> **Exemplo de Caso de Uso Futuro:**
-> _Usuário:_ "Kallots, abra o WhatsApp, encontre a conversa do João, escreva que a reunião foi adiada para as 15h e aguarde minha confirmação para enviar."
-> _Kallots:_ Executa a navegação visual ou via API, preenche as informações em sandbox e aguarda o trigger físico do usuário para conclusão.
+Um sistema narrativo reativo e em tempo real para Minecraft, onde uma Inteligência Artificial julga, narra e reage às ações do jogador dinamicamente.
 
----
+- **Arquitetura:** O cliente (Java/Fabric) atua como um sensor de telemetria inteligente, possuindo um compressor de eventos e sistema de buffer anti-perda. Ele se comunica via HTTP com o servidor local (Python/FastAPI).
+- **Cérebro (IA):** O backend processa a matemática de engajamento do jogador (risco, tédio e progresso) para ditar o tom da cena e faz a inferência usando LLMs locais (Ollama) ou em nuvem.
+- **Output:** Geração de áudio TTS assíncrono em tempo real (Stream) direto para o cliente do jogo.
+- **Stack:** `Java` `Fabric API` `Python` `FastAPI` `Prompt Engineering` `LLMs`
 
-## 💻 Como Executar o Projeto
+### ⚙️ Smartflow
 
-### Pré-requisitos Técnicos
+Solução híbrida baseada em microsserviços desenvolvida para resolver o gap de sincronização entre leads de revisão e agendamentos reais. O ecossistema aproveita a robustez do Java para regras de negócio e a alta performance do Go para processamento em lote e concorrência.
 
-1. **SDK do .NET 8.0** instalado na máquina.
-2. **Python 3.x** configurado nas variáveis de ambiente (`PATH`) com a biblioteca `edge-tts` instalada mundialmente:
-
-```powershell
-pip install edge-tts
-
-```
-
-3. Modelos de IA locais inseridos manualmente na estrutura de arquivos do projeto:
-
-- O modelo do Vosk (versão pequena de 30MB) deve ser extraído diretamente em: `src/Kallots.Worker/Models/Vosk/` (certifique-se de que os arquivos como `final.mdl` e `am` não fiquem presos em subpastas).
-- O modelo do Whisper (`ggml-base.bin`) deve ser inserido em: `src/Kallots.Worker/Models/Whisper/`.
-
-### Configuração de Segurança (User Secrets)
-
-Para evitar o vazamento acidental de chaves de API no GitHub, o projeto utiliza o gerenciador de segredos do .NET. Navegue até a pasta do Worker e configure sua credencial do Groq:
-
-```powershell
-cd src/Kallots.Worker
-dotnet user-secrets init
-dotnet user-secrets set "GroqApiKey" "SUA_CHAVE_COMPLETA_DO_GROQ_AQUI"
-
-```
-
-### Inicialização em Ambiente de Desenvolvimento
-
-Por motivos de segurança corporativa do ecossistema .NET, os segredos de usuário são bloqueados em modo de Produção. Certifique-se de forçar a flag de ambiente ao inicializar o assistente via console:
-
-```powershell
-dotnet clean
-dotnet build
-dotnet run --environment Development
-
-```
+- **API Core (Gestão):** Desenvolvida com Spring Boot e PostgreSQL, atua como o sistema de registro principal para gestão de clientes e criação de agendamentos (`POST /agendamentos`).
+- **Motor Worker (Go):** Serviço focado em alta performance que realiza varreduras periódicas com uma engine de elegibilidade avançada (filtros de 90 dias, proteção antiduplicidade e validação de agendamentos ativos).
+- **Mensageria & Rate Limiting:** Integração direta com a Telegram Bot API contendo controle de vazão rigoroso (`time.Ticker` de 100ms), limitando o processamento assíncrono a 10 leads por segundo e garantindo resiliência sob alto estresse (validado com mais de 300 clientes simultâneos).
+- **Stack:** `Java` `Spring Boot` `Go` `PostgreSQL` `Docker` `Telegram API`
 
 ---
 
-## 📄 Considerações Finais
+## 📊 Minhas Estatísticas
 
-O Kallots prova que é totalmente viável construir soluções de assistentes virtuais de alta fidelidade e tempo de resposta baixo utilizando hardware convencional, desde que as fronteiras entre o processamento local (Edge) e o processamento em nuvem (Cloud) sejam bem desenhadas arquiteturalmente.
+<div align="center">
+  <img src="https://streak-stats.demolab.com?user=Gabigoubi&theme=tokyonight&hide_border=true&locale=pt-br" alt="GitHub Streak" />
+</div>
 
----
+<br>
+
+<div align="center">
+  <img src="https://media.tenor.com/RyF8iVDEf3cAAAAj/16bit-80s.gif" width="250" alt="Meu GIF bonitinho" />
+</div>
