@@ -81,8 +81,6 @@ O escopo atual do MVP está validado, blindado e altamente responsivo nas seguin
 [ Edge TTS (Resposta Vocal) ] <──(Feedback)── [ Ação Executada no SO ]
 ```
 
-````
-
 ---
 
 ## 🗺️ Roadmap & Objetivos de Longo Prazo
@@ -133,4 +131,3 @@ dotnet run --environment Development
 ```
 
 ---
-````
