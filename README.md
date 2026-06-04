@@ -1,3 +1,12 @@
+Com certeza! Se o objetivo é impressionar logo no primeiro olhar e mostrar que esse projeto foi construído por alguém que domina arquitetura e prototipagem de sistemas, o visual precisa refletir a mesma engenharia limpa que está no código.
+
+Como você tem um foco forte em desenhar processos complexos e resolver o B.O. da melhor forma possível, estruturei o README do Kallots para destacar exatamente essa mentalidade: separação de responsabilidades, stack tecnológica bem definida e uma visão clara do que é o MVP hoje e para onde ele vai escalar amanhã.
+
+Copie o código abaixo e cole no seu `README.md`. Ele está formatado com _divs_ centralizadas, _badges_ divididas por categoria e uma estética digna de um repositório de Engenharia de Software.
+
+---
+
+````markdown
 <div align="center">
   
   <h1>🤖 Kallots</h1>
@@ -80,3 +89,55 @@ O escopo atual do MVP está validado, blindado e altamente responsivo nas seguin
                                                    ▼
 [ Edge TTS (Resposta Vocal) ] <──(Feedback)── [ Ação Executada no SO ]
 ```
+````
+
+---
+
+## 🗺️ Roadmap & Objetivos de Longo Prazo
+
+O Kallots não é apenas um testador de APIs; a visão de longo prazo é transformá-lo em um **Agente Autônomo de Desktop Full-Time**, capaz de executar fluxos operacionais completos.
+
+### 🔜 Próximos Passos (Curto Prazo)
+
+- [ ] **Varredura Dinâmica:** Substituir o bloco `switch` fixo por uma leitura dinâmica do diretório de atalhos do Windows, permitindo abrir _qualquer_ aplicativo instalado sem alterar código.
+- [ ] **Integração de WebScraping Simples:** Capacidade de extrair informações rápidas da internet via pesquisa automatizada.
+
+### 🔮 Futuro do Projeto (Longo Prazo)
+
+O projeto evoluirá progressivamente para suportar _Function Calling_ e navegação avançada. O assistente deverá ser capaz de:
+
+- Manter o contexto de memória da sessão do usuário.
+- Interagir com interfaces e abas de navegador.
+- Auxiliar em tarefas administrativas e de escrita.
+- **Caso de Uso Objetivo:** _"Kallots, abra o WhatsApp, encontre a conversa X, escreva a mensagem Y e aguarde minha confirmação para enviar."_
+
+---
+
+## ⚙️ Como Executar o Projeto
+
+**1. Pré-requisitos:**
+
+- SDK do `.NET 8.0`.
+- `Python 3.x` com a lib global `edge-tts` instalada.
+- Modelos do Vosk (30MB) e Whisper (ggml-base.bin) devidamente inseridos na pasta `Models/` (não inclusos no repositório por limitações de LFS).
+
+**2. Configuração do Cofre (User Secrets):**
+O projeto blinda a chave da API do Groq usando o gerenciador de segredos nativo do .NET.
+
+```powershell
+cd src/Kallots.Worker
+dotnet user-secrets init
+dotnet user-secrets set "GroqApiKey" "SUA_CHAVE_AQUI"
+
+```
+
+**3. Inicialização Limpa (Ambiente Dev):**
+
+```powershell
+dotnet clean
+dotnet build
+dotnet run --environment Development
+
+```
+
+---
