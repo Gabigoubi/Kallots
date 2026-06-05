@@ -59,21 +59,17 @@ namespace Kallots.Worker
 
 private async Task ProcessVoiceCommandAsync()
         {
-            // Aciona a tranca de segurança
             _isProcessingCommand = true;
             var globalTimer = Stopwatch.StartNew();
             
-            // Task 2.1: Definição da Máquina de Estados e condição de fuga (Anti-Deadlock)
             int maxAttempts = 2;
             int currentAttempt = 1;
             bool commandExecuted = false;
 
             try
             {
-                var tempAudioPath = Path.Combine(Path.GetTempPath(), "kallots_command.wav");
                 _logger.LogInformation(">>> GATILHO RECEBIDO. INICIANDO PIPELINE (MÁQUINA DE ESTADOS) <<<");
                 
-                // Feedback Sonoro UX na primeira tentativa
                 if (OperatingSystem.IsWindows())
                 {
                     Console.Beep(800, 250); 
@@ -83,61 +79,55 @@ private async Task ProcessVoiceCommandAsync()
                 {
                     _logger.LogInformation("--- TENTATIVA {Attempt}/{MaxAttempts} ---", currentAttempt, maxAttempts);
                     
-                    // Task 2.3: Gravação Curta na clarificação (5s no gatilho inicial, 3s no loop)
+                    // CORREÇÃO: Geramos um nome de arquivo ÚNICO para cada tentativa para evitar colisão de I/O
+                    var tempAudioPath = Path.Combine(Path.GetTempPath(), $"kallots_cmd_{Guid.NewGuid()}.wav");
+                    
                     int recordDuration = (currentAttempt == 1) ? 5 : 3;
                     
-                    var stepTimer = Stopwatch.StartNew();
-                    _logger.LogInformation("1. Gravando {Duration} segundos de áudio do microfone...", recordDuration);
-                    await _audioRecorder.RecordCommandAsync(tempAudioPath, recordDuration); 
-                    _logger.LogInformation("   [Telemetria] Tempo de Gravação: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
-                    
-                    stepTimer.Restart();
-                    _logger.LogInformation("2. Transcrevendo áudio pesado com Whisper local...");
-                    var userText = await _sttProvider.TranscribeAudioAsync(tempAudioPath);
-                    _logger.LogInformation("   [Telemetria] Tempo de Transcrição: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
-
-                    if (string.IsNullOrWhiteSpace(userText))
+                    try 
                     {
-                        _logger.LogWarning("Whisper não captou nada válido (Silêncio ou ruído).");
-                        if (currentAttempt < maxAttempts)
-                        {
-                            await _ttsProvider.SpeakAsync("Não consegui ouvir. Pode repetir o nome do programa?");
-                        }
-                        currentAttempt++;
-                        continue; // Pula as próximas etapas e reinicia a gravação
-                    }
-                    
-                    _logger.LogInformation("   Texto Mapeado: [{UserText}]", userText);
-
-                    stepTimer.Restart();
-                    _logger.LogInformation("3. Disparando para Inteligência Nuvem (Groq API)...");
-                    var intent = await _llmProvider.ProcessIntentAsync(userText);
-                    _logger.LogInformation("   [Telemetria] Tempo de Resposta da API: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
-                    _logger.LogInformation("   Intenção Retornada: [{Intent}]", intent);
-
-                    _logger.LogInformation("4. Acionando Motor de Execução Windows...");
-                    
-                    // O novo CommandExecutor agora retorna um bool validando se achou o atalho
-                    commandExecuted = _commandExecutor.ExecuteCommand(intent);
-
-                    if (commandExecuted)
-                    {
-                        await _ttsProvider.SpeakAsync("Ok chefe, abrindo.");
-                        _logger.LogInformation("Ação executada no SO com sucesso!");
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Intenção inválida ou aplicativo não encontrado no disco.");
+                        var stepTimer = Stopwatch.StartNew();
+                        _logger.LogInformation("1. Gravando {Duration} segundos de áudio do microfone...", recordDuration);
+                        await _audioRecorder.RecordCommandAsync(tempAudioPath, recordDuration); 
+                        _logger.LogInformation("   [Telemetria] Tempo de Gravação: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
                         
-                        // Task 2.2: Feedback Inteligente e acionamento do Loop
-                        if (currentAttempt < maxAttempts)
+                        stepTimer.Restart();
+                        _logger.LogInformation("2. Transcrevendo áudio pesado com Whisper local...");
+                        var userText = await _sttProvider.TranscribeAudioAsync(tempAudioPath);
+                        _logger.LogInformation("   [Telemetria] Tempo de Transcrição: {Elapsed}ms", stepTimer.ElapsedMilliseconds);
+
+                        if (string.IsNullOrWhiteSpace(userText))
                         {
-                            await _ttsProvider.SpeakAsync("Não encontrei esse aplicativo, ou não entendi. Qual programa você quer abrir?");
+                            _logger.LogWarning("Whisper não captou nada válido.");
+                            if (currentAttempt < maxAttempts) await _ttsProvider.SpeakAsync("Não ouvi. Pode repetir?");
+                            currentAttempt++;
+                            continue; 
+                        }
+                        
+                        _logger.LogInformation("   Texto Mapeado: [{UserText}]", userText);
+
+                        stepTimer.Restart();
+                        _logger.LogInformation("3. Disparando para Inteligência Nuvem (Groq API)...");
+                        var intent = await _llmProvider.ProcessIntentAsync(userText);
+                        
+                        commandExecuted = _commandExecutor.ExecuteCommand(intent);
+
+                        if (commandExecuted)
+                        {
+                            await _ttsProvider.SpeakAsync("Ok chefe, abrindo.");
                         }
                         else
                         {
-                            await _ttsProvider.SpeakAsync("Ainda não consegui encontrar. Operação cancelada.");
-                            _logger.LogWarning("Limite de tentativas atingido. Abortando loop de conversação.");
+                            if (currentAttempt < maxAttempts) await _ttsProvider.SpeakAsync("Não entendi. Qual programa quer abrir?");
+                            else await _ttsProvider.SpeakAsync("Operação cancelada.");
+                        }
+                    }
+                    finally
+                    {
+                        // CORREÇÃO: Limpeza de disco. Remove o arquivo temporário após o uso para não lotar o HD
+                        if (File.Exists(tempAudioPath))
+                        {
+                            File.Delete(tempAudioPath);
                         }
                     }
 
@@ -147,13 +137,12 @@ private async Task ProcessVoiceCommandAsync()
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro fatal processando o pipeline de voz.");
-                await _ttsProvider.SpeakAsync("Ocorreu um erro interno. Consulte o log do sistema.");
+                await _ttsProvider.SpeakAsync("Ocorreu um erro interno.");
             }
             finally
             {
-                // Limpa os tempos e destranca o assistente com segurança
                 globalTimer.Stop();
-                _logger.LogInformation(">>> PIPELINE ENCERRADO. Tempo Total: {Elapsed}ms. Destrancando audição. <<<", globalTimer.ElapsedMilliseconds);
+                _logger.LogInformation(">>> PIPELINE ENCERRADO. Tempo Total: {Elapsed}ms. <<<", globalTimer.ElapsedMilliseconds);
                 _isProcessingCommand = false;
             }
         }
