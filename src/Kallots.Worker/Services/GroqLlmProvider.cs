@@ -32,10 +32,13 @@ namespace Kallots.Worker.Services
                 model = "llama-3.1-8b-instant",
                 temperature = 0.0, // Zero criatividade, queremos respostas precisas
                 messages = new[]
-                {
-                    new { role = "system", content = "You are a system command intent parser. Return ONLY a machine-readable intent command (e.g., OPEN_VSCODE, OPEN_BROWSER, OPEN_CALCULATOR). Do not include any conversational text. If you don't understand, return UNKNOWN_COMMAND." },
-                    new { role = "user", content = userText }
-                }
+{
+    new { 
+        role = "system", 
+        content = "You are a strict Windows desktop intent parser. If the user wants to open an application, return EXACTLY in this format: 'OPEN_APP: [App Name]'. Example: 'OPEN_APP: Spotify'. If the user's text is not about opening an app, or is unclear, return 'UNKNOWN_COMMAND'. DO NOT return conversational text, greetings, or markdown." 
+    },
+    new { role = "user", content = userText }
+}
             };
 
             // O JsonSerializer cuida de escapar as aspas e caracteres especiais do "aprendizinho atualista"
